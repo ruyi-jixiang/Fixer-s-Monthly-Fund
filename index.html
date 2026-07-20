@@ -274,10 +274,8 @@
     // PASTE YOUR GOOGLE FIREBASE URL RIGHT HERE BETWEEN THE QUOTES
     const FIREBASE_DB_URL = "https://fixer-s-monthly-fund-default-rtdb.firebaseio.com/";
 
-    // Append standard format endpoint if missing trailing slash or format
     const dbEndpoint = FIREBASE_DB_URL.endsWith('/') ? `${FIREBASE_DB_URL}donations.json` : `${FIREBASE_DB_URL}/donations.json`;
 
-    // Fetch the global data automatically whenever the page loads or updates
     async function fetchGlobalDonations() {
         if (FIREBASE_DB_URL.includes("YOUR_FIREBASE_URL_HERE")) {
             console.error("Firebase URL missing.");
@@ -290,7 +288,6 @@
             
             let globalList = [];
             if (data) {
-                // Firebase structure returns objects with unique keys; map it back into a readable array
                 globalList = Object.keys(data).map(key => data[key]);
             }
             
@@ -300,7 +297,6 @@
         }
     }
 
-    // Run synchronization routine immediately and check for new records every 5 seconds
     fetchGlobalDonations();
     setInterval(fetchGlobalDonations, 5000);
 
@@ -331,17 +327,15 @@
             name: nameInput.value.trim(),
             amount: parseInt(amountInput.value),
             timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-            dateCreated: Date.now() // Internal sorting tracker
+            dateCreated: Date.now()
         };
 
-        // Instantly push database entry payload to Firebase via POST API
         try {
             await fetch(dbEndpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newDonation)
             });
-            // Force quick visual sync update
             fetchGlobalDonations();
         } catch (error) {
             alert("Funds routing failed. Check network link.");
@@ -371,7 +365,7 @@
             return;
         }
 
-        // Sort Recent Transmissions (Newest timestamps first)
+        // 1. Process Recent Transmissions & Total Sum (Individual item records chronologically)
         const recentDonations = [...globalDonations].sort((a,b) => b.dateCreated - a.dateCreated);
         recentDonations.forEach(don => {
             grandTotal += don.amount;
@@ -385,9 +379,24 @@
             recentContainer.appendChild(row);
         });
 
-        // Sort Top Donors globally (Highest values first)
-        const sortedDonations = [...globalDonations].sort((a, b) => b.amount - a.amount);
-        sortedDonations.forEach((don, index) => {
+        // 2. Aggregate Amounts by Name for the Leaderboard
+        const aggregatedDonations = {};
+        globalDonations.forEach(don => {
+            const cleanName = don.name.trim();
+            if (aggregatedDonations[cleanName]) {
+                aggregatedDonations[cleanName] += don.amount;
+            } else {
+                aggregatedDonations[cleanName] = don.amount;
+            }
+        });
+
+        // 3. Convert Aggregation object to sorted leaderboard array
+        const sortedLeaderboard = Object.keys(aggregatedDonations).map(name => {
+            return { name: name, amount: aggregatedDonations[name] };
+        }).sort((a, b) => b.amount - a.amount);
+
+        // 4. Output values onto the Top Donors Board
+        sortedLeaderboard.forEach((don, index) => {
             const row = document.createElement('div');
             row.className = 'ledger-item';
             row.innerHTML = `
