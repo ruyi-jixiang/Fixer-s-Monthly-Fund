@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RECONSTRUCTION FUND | Fixers Monthly Emergency Portal</title>
+    <style>
+        :root {
+            --bg-color: #0c0f12;
+            --panel-color: #161b22;
+            --accent-gold: #d4af37; /* Seven Association gold vibe */
+            --accent-red: #c93b3b;  /* Arson/Emergency red */
+            --text-color: #e2e8f0;
+            --text-muted: #8b949e;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background-color: var(--panel-color);
+            border: 2px solid var(--accent-red);
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(199, 59, 59, 0.2);
+            box-sizing: border-box;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px dashed var(--accent-muted);
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            color: var(--accent-red);
+            font-size: 28px;
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .alert-box {
+            background: rgba(199, 59, 59, 0.1);
+            border-left: 4px solid var(--accent-red);
+            padding: 15px;
+            margin-bottom: 25px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--accent-gold);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            background-color: var(--bg-color);
+            border: 1px solid var(--text-muted);
+            color: var(--text-color);
+            padding: 12px;
+            font-family: inherit;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+
+        .amount-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .amt-btn {
+            flex: 1;
+            background-color: var(--bg-color);
+            border: 1px solid var(--text-muted);
+            color: var(--text-color);
+            padding: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .amt-btn:hover, .amt-btn.active {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+            background-color: rgba(212, 175, 55, 0.05);
+        }
+
+        .submit-btn {
+            width: 100%;
+            background-color: var(--accent-red);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background-color: #b03030;
+        }
+
+        .ledger-section {
+            margin-top: 35px;
+            border-top: 2px dashed var(--accent-muted);
+            padding-top: 25px;
+        }
+
+        .ledger-title {
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            font-size: 16px;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ledger-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 500px) {
+            .ledger-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .ledger-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(139, 148, 158, 0.2);
+            padding-bottom: 4px;
+        }
+
+        .ledger-list {
+            max-height: 180px;
+            overflow-y: auto;
+            border: 1px solid rgba(139, 148, 158, 0.2);
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+        }
+
+        .ledger-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 5px;
+            border-bottom: 1px solid rgba(139, 148, 158, 0.1);
+            font-size: 13px;
+        }
+
+        .ledger-item:last-child {
+            border-bottom: none;
+        }
+
+        .total-counter {
+            font-size: 16px;
+            color: var(--text-color);
+            font-weight: bold;
+        }
+
+        .ledger-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .ledger-list::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+        .ledger-list::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Fixers Monthly</h1>
+        <p>OFFICIAL EMERGENCY RECONSTRUCTION FUND</p>
+        <p style="font-size: 11px; color: var(--accent-gold);">Co-Sponsored by the Seven Association</p>
+    </div>
+
+    <div class="alert-box">
+        <strong>NOTICE TO SUBSCRIBERS:</strong> Our central headquarters was recently the victim of a devastating arson attack. A large portion of our printing machinery, active project files, and archival materials were completely destroyed in the blaze. This portal has been established to securely route temporary operational funding so we may resume standard publication.
+    </div>
+
+    <form id="donationForm" onsubmit="handleDonation(event)">
+        <div class="form-group">
+            <label for="donorName">Fixer / Lore Identity Name</label>
+            <input type="text" id="donorName" placeholder="e.g., Fixer Johnny Patchwork" required>
+        </div>
+
+        <div class="form-group">
+            <label>Select Allocation Amount (Ahn)</label>
+            <div class="amount-buttons">
+                <button type="button" class="amt-btn" onclick="setAmount(500)">500</button>
+                <button type="button" class="amt-btn" onclick="setAmount(1000)">1,000</button>
+                <button type="button" class="amt-btn" onclick="setAmount(5000)">5,000</button>
+                <button type="button" class="amt-btn" onclick="setAmount(10000)">10,000</button>
+            </div>
+            <input type="number" id="customAmount" placeholder="Or input custom amount" min="1" required>
+        </div>
+
+        <button type="submit" class="submit-btn">Authorize Fund Routing</button>
+    </form>
+
+    <div class="ledger-section">
+        <div class="ledger-title">
+            <span>Financial Ledger</span>
+            <span class="total-counter">Total Raised: <span id="totalDisplay" style="color: var(--accent-gold);">0</span> Ahn</span>
+        </div>
+        
+        <div class="ledger-grid">
+            <div>
+                <div class="ledger-subtitle">Top Donors</div>
+                <div class="ledger-list" id="topLedgerList">
+                    <!-- Dynamic Top Donors -->
+                </div>
+            </div>
+            <div>
+                <div class="ledger-subtitle">Recent Transmissions</div>
+                <div class="ledger-list" id="recentLedgerList">
+                    <!-- Dynamic Recent Donors -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let donations = JSON.parse(localStorage.getItem('fixer_donations')) || [];
+
+    updateLedgers();
+
+    function setAmount(val) {
+        document.getElementById('customAmount').value = val;
+        const buttons = document.querySelectorAll('.amt-btn');
+        buttons.forEach(btn => {
+            if(parseInt(btn.innerText.replace(/,/g, '')) === val) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+
+    document.getElementById('customAmount').addEventListener('input', () => {
+        const buttons = document.querySelectorAll('.amt-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+    });
+
+    function handleDonation(e) {
+        e.preventDefault();
+        
+        const nameInput = document.getElementById('donorName');
+        const amountInput = document.getElementById('customAmount');
+
+        const newDonation = {
+            name: nameInput.value.trim(),
+            amount: parseInt(amountInput.value),
+            timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+        };
+
+        donations.unshift(newDonation);
+        localStorage.setItem('fixer_donations', JSON.stringify(donations));
+
+        updateLedgers();
+
+        nameInput.value = '';
+        amountInput.value = '';
+        const buttons = document.querySelectorAll('.amt-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+    }
+
+    function updateLedgers() {
+        const recentContainer = document.getElementById('recentLedgerList');
+        const topContainer = document.getElementById('topLedgerList');
+        const totalContainer = document.getElementById('totalDisplay');
+        
+        recentContainer.innerHTML = '';
+        topContainer.innerHTML = '';
+        
+        let grandTotal = 0;
+
+        if (donations.length === 0) {
+            const emptyState = '<div class="ledger-item" style="color: var(--text-muted); justify-content: center;">No records found.</div>';
+            recentContainer.innerHTML = emptyState;
+            topContainer.innerHTML = emptyState;
+            totalContainer.innerText = '0';
+            return;
+        }
+
+        // Calculate Grand Total and Populate Recent Transmissions
+        donations.forEach(don => {
+            grandTotal += don.amount;
+            
+            const row = document.createElement('div');
+            row.className = 'ledger-item';
+            row.innerHTML = `
+                <span>[${don.timestamp}] <strong>${escapeHtml(don.name)}</strong></span>
+                <span style="color: var(--accent-gold);">${don.amount.toLocaleString()}</span>
+            `;
+            recentContainer.appendChild(row);
+        });
+
+        // Generate and Populate Top Donors (Sorted highest to lowest)
+        const sortedDonations = [...donations].sort((a, b) => b.amount - a.amount);
+        sortedDonations.forEach((don, index) => {
+            const row = document.createElement('div');
+            row.className = 'ledger-item';
+            row.innerHTML = `
+                <span>#${index + 1} <strong>${escapeHtml(don.name)}</strong></span>
+                <span style="color: var(--accent-gold);">${don.amount.toLocaleString()}</span>
+            `;
+            topContainer.appendChild(row);
+        });
+
+        totalContainer.innerText = grandTotal.toLocaleString();
+    }
+
+    function escapeHtml(text) {
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+</script>
+
+</body>
+</html>
