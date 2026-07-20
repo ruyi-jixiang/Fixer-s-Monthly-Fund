@@ -8,8 +8,8 @@
         :root {
             --bg-color: #0c0f12;
             --panel-color: #161b22;
-            --accent-gold: #d4af37; /* Seven Association gold vibe */
-            --accent-red: #c93b3b;  /* Arson/Emergency red */
+            --accent-gold: #d4af37; 
+            --accent-red: #c93b3b;  
             --text-color: #e2e8f0;
             --text-muted: #8b949e;
         }
@@ -118,6 +118,16 @@
             background-color: rgba(212, 175, 55, 0.05);
         }
 
+        .disclaimer {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         .submit-btn {
             width: 100%;
             background-color: var(--accent-red);
@@ -130,7 +140,6 @@
             cursor: pointer;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-top: 10px;
         }
 
         .submit-btn:hover {
@@ -200,16 +209,6 @@
             color: var(--text-color);
             font-weight: bold;
         }
-
-        .ledger-list::-webkit-scrollbar {
-            width: 4px;
-        }
-        .ledger-list::-webkit-scrollbar-track {
-            background: var(--bg-color);
-        }
-        .ledger-list::-webkit-scrollbar-thumb {
-            background: var(--text-muted);
-        }
     </style>
 </head>
 <body>
@@ -242,26 +241,29 @@
             <input type="number" id="customAmount" placeholder="Or input custom amount" min="1" required>
         </div>
 
+        <div class="disclaimer">
+            ** NOTICE: All donations are purely simulated and will be handled strictly in-lore **
+        </div>
         <button type="submit" class="submit-btn">Authorize Fund Routing</button>
     </form>
 
     <div class="ledger-section">
         <div class="ledger-title">
-            <span>Financial Ledger</span>
+            <span>GLOBAL FINANCIAL LEDGER</span>
             <span class="total-counter">Total Raised: <span id="totalDisplay" style="color: var(--accent-gold);">0</span> Ahn</span>
         </div>
         
         <div class="ledger-grid">
             <div>
-                <div class="ledger-subtitle">Top Donors</div>
+                <div class="ledger-subtitle">Top Global Donors</div>
                 <div class="ledger-list" id="topLedgerList">
-                    <!-- Dynamic Top Donors -->
+                    <div class="ledger-item" style="color: var(--text-muted); justify-content: center;">Syncing ledger...</div>
                 </div>
             </div>
             <div>
-                <div class="ledger-subtitle">Recent Transmissions</div>
+                <div class="ledger-subtitle">Recent Global Transmissions</div>
                 <div class="ledger-list" id="recentLedgerList">
-                    <!-- Dynamic Recent Donors -->
+                    <div class="ledger-item" style="color: var(--text-muted); justify-content: center;">Syncing ledger...</div>
                 </div>
             </div>
         </div>
@@ -269,9 +271,38 @@
 </div>
 
 <script>
-    let donations = JSON.parse(localStorage.getItem('fixer_donations')) || [];
+    // PASTE YOUR GOOGLE FIREBASE URL RIGHT HERE BETWEEN THE QUOTES
+    const FIREBASE_DB_URL = "https://fixer-s-monthly-fund-default-rtdb.firebaseio.com/";
 
-    updateLedgers();
+    // Append standard format endpoint if missing trailing slash or format
+    const dbEndpoint = FIREBASE_DB_URL.endsWith('/') ? `${FIREBASE_DB_URL}donations.json` : `${FIREBASE_DB_URL}/donations.json`;
+
+    // Fetch the global data automatically whenever the page loads or updates
+    async function fetchGlobalDonations() {
+        if (FIREBASE_DB_URL.includes("YOUR_FIREBASE_URL_HERE")) {
+            console.error("Firebase URL missing.");
+            return;
+        }
+
+        try {
+            const response = await fetch(dbEndpoint);
+            const data = await response.json();
+            
+            let globalList = [];
+            if (data) {
+                // Firebase structure returns objects with unique keys; map it back into a readable array
+                globalList = Object.keys(data).map(key => data[key]);
+            }
+            
+            updateLedgersUI(globalList);
+        } catch (error) {
+            console.error("Error connecting to real-time database ledger:", error);
+        }
+    }
+
+    // Run synchronization routine immediately and check for new records every 5 seconds
+    fetchGlobalDonations();
+    setInterval(fetchGlobalDonations, 5000);
 
     function setAmount(val) {
         document.getElementById('customAmount').value = val;
@@ -290,7 +321,7 @@
         buttons.forEach(btn => btn.classList.remove('active'));
     });
 
-    function handleDonation(e) {
+    async function handleDonation(e) {
         e.preventDefault();
         
         const nameInput = document.getElementById('donorName');
@@ -299,13 +330,22 @@
         const newDonation = {
             name: nameInput.value.trim(),
             amount: parseInt(amountInput.value),
-            timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+            dateCreated: Date.now() // Internal sorting tracker
         };
 
-        donations.unshift(newDonation);
-        localStorage.setItem('fixer_donations', JSON.stringify(donations));
-
-        updateLedgers();
+        // Instantly push database entry payload to Firebase via POST API
+        try {
+            await fetch(dbEndpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newDonation)
+            });
+            // Force quick visual sync update
+            fetchGlobalDonations();
+        } catch (error) {
+            alert("Funds routing failed. Check network link.");
+        }
 
         nameInput.value = '';
         amountInput.value = '';
@@ -313,7 +353,7 @@
         buttons.forEach(btn => btn.classList.remove('active'));
     }
 
-    function updateLedgers() {
+    function updateLedgersUI(globalDonations) {
         const recentContainer = document.getElementById('recentLedgerList');
         const topContainer = document.getElementById('topLedgerList');
         const totalContainer = document.getElementById('totalDisplay');
@@ -323,7 +363,7 @@
         
         let grandTotal = 0;
 
-        if (donations.length === 0) {
+        if (globalDonations.length === 0) {
             const emptyState = '<div class="ledger-item" style="color: var(--text-muted); justify-content: center;">No records found.</div>';
             recentContainer.innerHTML = emptyState;
             topContainer.innerHTML = emptyState;
@@ -331,8 +371,9 @@
             return;
         }
 
-        // Calculate Grand Total and Populate Recent Transmissions
-        donations.forEach(don => {
+        // Sort Recent Transmissions (Newest timestamps first)
+        const recentDonations = [...globalDonations].sort((a,b) => b.dateCreated - a.dateCreated);
+        recentDonations.forEach(don => {
             grandTotal += don.amount;
             
             const row = document.createElement('div');
@@ -344,8 +385,8 @@
             recentContainer.appendChild(row);
         });
 
-        // Generate and Populate Top Donors (Sorted highest to lowest)
-        const sortedDonations = [...donations].sort((a, b) => b.amount - a.amount);
+        // Sort Top Donors globally (Highest values first)
+        const sortedDonations = [...globalDonations].sort((a, b) => b.amount - a.amount);
         sortedDonations.forEach((don, index) => {
             const row = document.createElement('div');
             row.className = 'ledger-item';
